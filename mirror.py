@@ -1,4 +1,3 @@
-import cv2
 print("This is mirror.py")
 
 import numpy as np
@@ -8,11 +7,13 @@ cap = cv.VideoCapture(0)
 if not cap.isOpened():
     print("Cannot open camera")
     exit()
+
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
     # turn the image into mirror image
     frame = cv.flip(frame,1)
+    height, width = frame.shape[:2]
 
     # if frame is read correctly ret is True
     if not ret:
@@ -20,11 +21,20 @@ while True:
         break
     # Our operations on the frame come here
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    # Display the resulting frame
-    cv.imshow('frame', gray)
+
+    # Display text
+    cv.putText(frame, "Demon", (100,100), cv.FONT_HERSHEY_SIMPLEX, 2, (150,0,150), 5)
+
+    # Display resulting frame
+    # cv.imshow('frame', gray)
+    cv.imshow('frame', frame)
     if cv.waitKey(1) == ord('q'):
         break
 
 # When everything done, release the capture
 cap.release()
 cv.destroyAllWindows()
+
+
+
+
