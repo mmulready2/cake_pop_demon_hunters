@@ -8,7 +8,7 @@ score = 0
 game_over = False
 game_over_message = ""
 show_instructions = True  
-instruction_start_time = time.time() 
+instruction_start_time = None 
 
 cap = cv.VideoCapture(0)
 
@@ -29,7 +29,7 @@ motion_threshold = 500000
 falling_demon = None
 last_falling_spawn = time.time()
 falling_spawn_interval = 5.0
-falling_speed = 20
+falling_speed = 10
 
 # Functions
 def spawn_corner_demon(width, height):
@@ -78,16 +78,21 @@ while True:
     if first:
         prev_gray = gray
         first = False
+        instruction_start_time = time.time()
+
+    # Instructions disappear
+    if show_instructions and instruction_start_time and (time.time() - instruction_start_time > 10):
+        show_instructions = False
 
     # Makes mirror not stop when a point is scored
-    if not game_over:
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    if not game_over and not show_instructions:
+        faces = face_cascade.detectMultiScale(gray, 1.1, 7)
         face_rect = None
         for (x, y, w, h) in faces:
             cv.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 3)
             face_rect = (x, y, w, h)
             break
-
+        
         # Spawn in demons at time
         current_time = time.time()
         if current_time - last_corner_spawn > corner_spawn_interval:
@@ -125,28 +130,28 @@ while True:
                 cv.putText(frame, f"{int(motion_amount/1000)}K", (demon['x'] + 10, demon['y'] + 30),
                          cv.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-    # Update falling demon
-    if falling_demon and falling_demon['active']:
-        falling_demon['y'] += falling_speed
-        
-        if face_rect:
-            demon_rect = (falling_demon['x'], falling_demon['y'], falling_demon['width'], falling_demon['height'])
-            if check_collision(face_rect, demon_rect):
-                game_over = True
-                game_over_message = "GAME OVER! Demon Hit Your Face!"
-        
-        if falling_demon['y'] > height:
-            score += 5
-            falling_demon = None
-        else:
-            cv.rectangle(frame, (falling_demon['x'], falling_demon['y']), (falling_demon['x'] + falling_demon['width'], falling_demon['y'] + falling_demon['height']), (255, 0, 0), -1)
-            cv.putText(frame, "DEMON", (falling_demon['x'] + 5, falling_demon['y'] + 90), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        # Update falling demon
+        if falling_demon and falling_demon['active']:
+            falling_demon['y'] += falling_speed
+            
             if face_rect:
-                fx, fy, fw, fh = face_rect
-                dx, dy, dw, dh = falling_demon['x'], falling_demon['y'], falling_demon['width'], falling_demon['height']
-                # Show collision warning when close
-                if dy + dh > fy and dy < fy + fh and abs((fx + fw//2) - (dx + dw//2)) < 150:
-                    cv.putText(frame, "CLOSE!", (width//2 - 80, height//2 - 100),cv.FONT_HERSHEY_SIMPLEX, 1.5, (0, 165, 255), 3)
+                demon_rect = (falling_demon['x'], falling_demon['y'], falling_demon['width'], falling_demon['height'])
+                if check_collision(face_rect, demon_rect):
+                    game_over = True
+                    game_over_message = "GAME OVER! Demon Hit Your Face!"
+            
+            if falling_demon['y'] > height:
+                score += 5
+                falling_demon = None
+            else:
+                cv.rectangle(frame, (falling_demon['x'], falling_demon['y']), (falling_demon['x'] + falling_demon['width'], falling_demon['y'] + falling_demon['height']), (255, 0, 0), -1)
+                cv.putText(frame, "DEMON", (falling_demon['x'] + 5, falling_demon['y'] + 90), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                if face_rect:
+                    fx, fy, fw, fh = face_rect
+                    dx, dy, dw, dh = falling_demon['x'], falling_demon['y'], falling_demon['width'], falling_demon['height']
+                    # Show collision warning when close
+                    if dy + dh > fy and dy < fy + fh and abs((fx + fw//2) - (dx + dw//2)) < 150:
+                        cv.putText(frame, "CLOSE!", (width//2 - 80, height//2 - 100),cv.FONT_HERSHEY_SIMPLEX, 1.5, (0, 165, 255), 3)
 
     # Calculate change in gray
     delta = cv.absdiff(gray[0:100],prev_gray[0:100]).sum()
@@ -161,34 +166,25 @@ while True:
     cv.putText(frame, f"Score: {score}", (width//2 - 100, 60), cv.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4)
 
     # Instructions
-    if show_instructions:
-        time_remaining = int(10 - (time.time() - instruction_start_time))
+    if show_instructions and instruction_start_time:
+        time_remaining = max(0, int(10 - (time.time() - instruction_start_time)))
         
         overlay = frame.copy()
         cv.rectangle(overlay, (width//2 - 400, 100), (width//2 + 400, 320), (0, 0, 0), -1)
         cv.addWeighted(overlay, 0.7, frame, 0.3, 0, frame)
         
-        cv.putText(frame, "DEMON HUNTER - GET READY!", (width//2 - 380, 150),
-                 cv.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 255), 3)
-        cv.putText(frame, "Ensure NO movement behind you", (width//2 - 360, 195),
-                 cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv.putText(frame, "Use a blank/still background", (width//2 - 340, 235),
-                 cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv.putText(frame, "Wave hands at RED demons to destroy", (width//2 - 380, 275),
-                 cv.FONT_HERSHEY_SIMPLEX, 0.9, (255, 100, 100), 2)
-        
-        # Countdown
+        cv.putText(frame, "DEMON HUNTER - GET READY!", (width//2 - 380, 150),cv.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 255), 3)
+        cv.putText(frame, "Ensure NO movement behind you", (width//2 - 360, 195),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv.putText(frame, "Use a blank/still background", (width//2 - 340, 235),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        cv.putText(frame, "Wave hands at RED demons to destroy", (width//2 - 380, 275),cv.FONT_HERSHEY_SIMPLEX, 0.9, (255, 100, 100), 2)
         cv.putText(frame, f"Starting in: {time_remaining}", (width//2 - 150, 315),
-                 cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+             cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
 
     # Display game over
     if game_over:
-        cv.putText(frame, game_over_message, (width//2 - 400, height//2),
-                 cv.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 255), 5)
-        cv.putText(frame, f"Final Score: {score}", (width//2 - 250, height//2 + 80),
-                 cv.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4)
-        cv.putText(frame, "Press Q to Exit", (width//2 - 220, height//2 + 150),
-                 cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 0), 3)
+        cv.putText(frame, game_over_message, (width//2 - 400, height//2),cv.FONT_HERSHEY_SIMPLEX, 1.8, (0, 0, 255), 5)
+        cv.putText(frame, f"Final Score: {score}", (width//2 - 250, height//2 + 80),cv.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 4)
+        cv.putText(frame, "Press Q to Exit", (width//2 - 220, height//2 + 150),cv.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 0), 3)
 
     # Display resulting frame
     cv.imshow('frame', frame)
