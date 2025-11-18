@@ -4,6 +4,8 @@ import numpy as np
 import cv2 as cv
 import time, random
 
+score = 0
+
 cap = cv.VideoCapture(0)
 
 if not cap.isOpened():
@@ -12,7 +14,6 @@ if not cap.isOpened():
 
 # Face detection
 face_cascade = cv.CascadeClassifier(cv.data.haarcascades + "haarcascade_frontalface_default.xml")
-
 
 first = True
 while True:
@@ -60,6 +61,9 @@ while True:
     cv.putText(frame, "Demon", (100,1000), cv.FONT_HERSHEY_SIMPLEX, 2, (150,0,150), 5)
     # Bottom Right
     cv.putText(frame, "Demon", (1600,1000), cv.FONT_HERSHEY_SIMPLEX, 2, (150,0,150), 5)
+
+    # Display score
+    cv.putText(frame, f"Score: {score}", (10, 60), cv.FONT_HERSHEY_SIMPLEX, 2, (0, 255, 255), 4)
 
     # Display resulting frame
     # cv.imshow('frame', gray)
