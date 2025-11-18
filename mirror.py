@@ -3,12 +3,15 @@ print("This is mirror.py")
 import numpy as np
 import cv2 as cv
 import time, random
+from playsound import playsound
+import threading
 
 score = 0
 game_over = False
 game_over_message = ""
 show_instructions = True  
 instruction_start_time = None 
+music_started = False
 
 cap = cv.VideoCapture(0)
 
@@ -80,9 +83,12 @@ while True:
         first = False
         instruction_start_time = time.time()
 
-    # Instructions disappear
+    # Instructions disappear and music
     if show_instructions and instruction_start_time and (time.time() - instruction_start_time > 10):
         show_instructions = False
+        if not music_started:
+            music_started = True
+            threading.Thread(target=lambda: playsound("Golden Canadian Remix K Pop Demon Hunters Parody.mp3"), daemon=True).start()
 
     # Makes mirror not stop when a point is scored
     if not game_over and not show_instructions:
@@ -176,7 +182,7 @@ while True:
         cv.putText(frame, "DEMON HUNTER - GET READY!", (width//2 - 380, 150),cv.FONT_HERSHEY_SIMPLEX, 1.3, (0, 255, 255), 3)
         cv.putText(frame, "Ensure NO movement behind you", (width//2 - 360, 195),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv.putText(frame, "Use a blank/still background", (width//2 - 340, 235),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-        cv.putText(frame, "Wave hands at RED demons to destroy", (width//2 - 380, 275),cv.FONT_HERSHEY_SIMPLEX, 0.9, (255, 100, 100), 2)
+        cv.putText(frame, "Wave cake pop at RED demons to destroy", (width//2 - 380, 275),cv.FONT_HERSHEY_SIMPLEX, 0.9, (255, 100, 100), 2)
         cv.putText(frame, f"Starting in: {time_remaining}", (width//2 - 150, 315),
              cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
 
