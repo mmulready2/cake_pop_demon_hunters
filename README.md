@@ -1,5 +1,6 @@
 # cake_pop_demon_hunters
 A motion-controlled webcam game built with Python and OpenCV where you hunt demons using cake pop movements and face tracking.
+https://github.com/mmulready2/cake_pop_demon_hunters
 
 Features
 - Mirrored Webcam Display: Natural mirror-like interaction
@@ -26,5 +27,7 @@ How It Works
 - Face Detection: Uses OpenCV's Haar Cascade classifier to detect and track faces in real-time.
 - Motion Detection: Compares consecutive frames to calculate pixel differences in demon regions. When motion exceeds a threshold, the demon is destroyed.
 - Collision Detection: Uses Axis-Aligned Bounding Box algorithm to detect when the falling demon rectangle intersects with the face rectangle
+
+Everything above should work! Enjoy!
 
 By Mariela Mulready
