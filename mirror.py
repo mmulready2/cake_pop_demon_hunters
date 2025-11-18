@@ -183,8 +183,8 @@ while True:
         cv.putText(frame, "Ensure NO movement behind you", (width//2 - 360, 195),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv.putText(frame, "Use a blank/still background", (width//2 - 340, 235),cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
         cv.putText(frame, "Wave cake pop at RED demons to destroy", (width//2 - 380, 275),cv.FONT_HERSHEY_SIMPLEX, 0.9, (255, 100, 100), 2)
-        cv.putText(frame, f"Starting in: {time_remaining}", (width//2 - 150, 315),
-             cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
+        cv.putText(frame, "Press 'Q' anytime to quit", (width//2 - 280, 355),cv.FONT_HERSHEY_SIMPLEX, 0.8, (200, 200, 200), 2)
+        cv.putText(frame, f"Starting in: {time_remaining}", (width//2 - 150, 315),cv.FONT_HERSHEY_SIMPLEX, 1.2, (0, 255, 0), 3)
 
     # Display game over
     if game_over:
